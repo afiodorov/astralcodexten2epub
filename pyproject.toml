@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "astralcodexten2epub"
+version = "0.1.0"
+description = "Scrapes astralcodexten.substack.com and converts into epub."
+authors = ["Tom Artiom Fiodorov <a.fiodorov@yahoo.co.uk>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.28.1"
+pandas = "^1.4.3"
+beautifulsoup4 = "^4.11.1"
+EbookLib = "^0.17.1"
+Pillow = "^9.2.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
