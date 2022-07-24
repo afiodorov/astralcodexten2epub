@@ -15,3 +15,7 @@ More work needed to make the epub pass `epubcheck`.
 5. `cd astralcodexten2epub && ./main.py`
 
 [1]: https://python-poetry.org/docs/
+
+# Example
+
+![screnshot](./example.png)
