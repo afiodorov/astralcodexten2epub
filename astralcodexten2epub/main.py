@@ -46,7 +46,7 @@ if __name__ == "__main__":
         results = []
 
         for offset in count(start=0, step=12):
-            resp = requests.get(
+            resp = s.get(
                 f"https://astralcodexten.substack.com/api/v1/archive?sort=new&search=&offset={offset}&limit=12"
             ).json()
             if len(resp) == 0:
