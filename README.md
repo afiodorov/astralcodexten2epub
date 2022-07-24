@@ -1,4 +1,4 @@
-# Astral Codex Ten
+# Astral Codex Ten 2 Epub
 
 Written in one go in one sleepless night for me to enjoy astralcodexten.substack.com on my epub reader.
 
