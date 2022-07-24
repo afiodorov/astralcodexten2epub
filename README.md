@@ -1,6 +1,6 @@
 # Astral Codex Ten 2 Epub
 
-Written in one go in one sleepless night for me to enjoy astralcodexten.substack.com on my epub reader.
+Written in one go one sleepless night for me to enjoy astralcodexten.substack.com on my epub reader.
 
 Converts the articles into epub.
 
