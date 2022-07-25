@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 
-import json
-import requests
-import re
 import html
-from PIL import Image, UnidentifiedImageError
-
+import json
+import re
+from itertools import count
 from pathlib import Path
 
-from requests.adapters import HTTPAdapter, Retry
-from itertools import count
-
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 from ebooklib import epub
+from PIL import Image, UnidentifiedImageError
+from requests.adapters import HTTPAdapter, Retry
 
 
 def pluck(d, attrs):
@@ -40,8 +38,7 @@ if __name__ == "__main__":
 
     articles_list_file = Path("articles.json")
     if articles_list_file.exists():
-        with articles_list_file.open() as f:
-            results = json.load(f)
+        results = json.loads(articles_list_file.read_text())
     else:
         results = []
 
@@ -54,8 +51,7 @@ if __name__ == "__main__":
 
             results.extend([pluck(x, ["title", "canonical_url"]) for x in resp])
 
-        with articles_list_file.open(mode="w") as f:
-            json.dump(results, f)
+        articles_list_file.write_text(json.dumps(results))
 
     df = pd.DataFrame.from_records(results)
     mask = df["title"].str.lower().str.contains("open thread")
@@ -80,8 +76,7 @@ if __name__ == "__main__":
     new_dest = Path("./articles2")
 
     for x in df.itertuples():
-        with (dest / get_fname(x.title)).open() as f:
-            text = f.read()
+        text = (dest / get_fname(x.title)).read_text()
 
         if len(text) < 200:
             continue
@@ -163,10 +158,9 @@ if __name__ == "__main__":
         if img_file.suffix == ".html":
             continue
 
-        with img_file.open(mode="rb") as f:
-            img = epub.EpubImage()
-            img.set_content(f.read())
-            img.file_name = img_file.name
+        img = epub.EpubImage()
+        img.set_content(img_file.read_bytes())
+        img.file_name = img_file.name
 
         book.add_item(img)
 
