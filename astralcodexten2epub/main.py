@@ -3,10 +3,11 @@
 import html
 import json
 import re
+from dataclasses import dataclass
 from itertools import count
 from pathlib import Path
+from typing import List
 
-import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from ebooklib import epub
@@ -14,8 +15,30 @@ from PIL import Image, UnidentifiedImageError
 from requests.adapters import HTTPAdapter, Retry
 
 
-def pluck(d, attrs):
-    return {a: d[a] for a in attrs if a in d}
+@dataclass
+class Record:
+    title: str
+    canonical_url: str
+
+    def skip(self) -> bool:
+        title = self.title.lower()
+        if "open thread" in title:
+            return True
+
+        if "links for" in title:
+            return True
+
+        if "mantic monday" in title:
+            return True
+
+        if "berkeley meetup" in title:
+            return True
+
+        return False
+
+
+def pluck(d) -> Record:
+    return Record(title=d["title"], canonical_url=d["canonical_url"])
 
 
 def extract(page):
@@ -38,9 +61,10 @@ if __name__ == "__main__":
 
     articles_list_file = Path("articles.json")
     if articles_list_file.exists():
-        results = json.loads(articles_list_file.read_text())
+        results_dicts = json.loads(articles_list_file.read_text())
+        results = [Record(**x) for x in results_dicts]
     else:
-        results = []
+        results: List[Record] = []
 
         for offset in count(start=0, step=12):
             resp = s.get(
@@ -49,20 +73,15 @@ if __name__ == "__main__":
             if len(resp) == 0:
                 break
 
-            results.extend([pluck(x, ["title", "canonical_url"]) for x in resp])
+            results.extend([pluck(x) for x in resp])
 
-        articles_list_file.write_text(json.dumps(results))
+        articles_list_file.write_text(json.dumps([x.asdict() for x in results]))
 
-    df = pd.DataFrame.from_records(results)
-    mask = df["title"].str.lower().str.contains("open thread")
-    mask |= df["title"].str.lower().str.contains("links for")
-    mask |= df["title"].str.lower().str.contains("mantic monday")
-    mask |= df["title"].str.lower().str.contains("berkeley meetup")
-    df = df[~mask]
+    results = [x for x in results if not x.skip()]
 
     dest = Path("./articles")
 
-    for x in df.itertuples():
+    for x in results:
         fout = dest / get_fname(x.title)
         if fout.exists():
             continue
@@ -75,7 +94,7 @@ if __name__ == "__main__":
 
     new_dest = Path("./articles2")
 
-    for x in df.itertuples():
+    for x in results:
         text = (dest / get_fname(x.title)).read_text()
 
         if len(text) < 200:
@@ -164,7 +183,7 @@ if __name__ == "__main__":
 
         book.add_item(img)
 
-    for x in df.itertuples():
+    for x in results:
         c1 = epub.EpubHtml(title=x.title, file_name=get_fname(x.title), lang="en")
         chapter_file = new_dest / get_fname(x.title)
         if not chapter_file.exists():
