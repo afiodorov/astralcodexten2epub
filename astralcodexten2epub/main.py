@@ -47,8 +47,10 @@ def extract(page):
     return str(el)
 
 
+notallowed = re.compile("[^_a-z0-9]+")
+
+
 def get_fname(title, ext=".html"):
-    notallowed = re.compile("[^_a-z0-9]+")
     fname = f"{title}".replace(" ", "_").lower()
     fname = notallowed.sub("", fname)
     return f"{fname}{ext}"
@@ -92,7 +94,7 @@ if __name__ == "__main__":
         with fout.open(mode="w") as f:
             f.write(res)
 
-    new_dest = Path("./articles2")
+    new_dest = Path("./articles_processed")
 
     for x in results:
         text = (dest / get_fname(x.title)).read_text()
