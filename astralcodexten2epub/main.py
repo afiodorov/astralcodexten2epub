@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import dataclasses
 import html
 import json
 import re
@@ -63,7 +64,7 @@ if __name__ == "__main__":
 
     articles_list_file = Path("articles.json")
     if articles_list_file.exists():
-        results_dicts = json.loads(articles_list_file.read_text())
+        results_dicts = json.loads(articles_list_file.read_text(encoding="utf-8"))
         results = [Record(**x) for x in results_dicts]
     else:
         results: List[Record] = []
@@ -77,7 +78,7 @@ if __name__ == "__main__":
 
             results.extend([pluck(x) for x in resp])
 
-        articles_list_file.write_text(json.dumps([x.asdict() for x in results]))
+        articles_list_file.write_text(json.dumps([dataclasses.asdict(x) for x in results]), encoding="utf-8")
 
     results = [x for x in results if not x.skip()]
 
@@ -91,20 +92,20 @@ if __name__ == "__main__":
         fout.parent.mkdir(parents=True, exist_ok=True)
         res = extract(s.get(x.canonical_url).text)
 
-        with fout.open(mode="w") as f:
+        with fout.open(mode="w", encoding="utf-8") as f:
             f.write(res)
 
     new_dest = Path("./articles_processed")
 
     for x in results:
-        text = (dest / get_fname(x.title)).read_text()
+        text = (dest / get_fname(x.title)).read_text(encoding="utf-8")
 
         if len(text) < 200:
             continue
 
         target = new_dest / get_fname(x.title)
         target.parent.mkdir(parents=True, exist_ok=True)
-        with target.open(mode="w") as f:
+        with target.open(mode="w", encoding="utf-8") as f:
             soup = BeautifulSoup(
                 f"""
             <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -190,7 +191,7 @@ if __name__ == "__main__":
         chapter_file = new_dest / get_fname(x.title)
         if not chapter_file.exists():
             continue
-        with chapter_file.open() as f:
+        with chapter_file.open(encoding="utf-8") as f:
             c1.content = f.read()
         c1.id = get_fname(x.title)
 
